@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RecallAlert - FDA Recall Intelligence</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#F4F6FA;min-height:100vh}
+nav{background:#060D1F;padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99}
+.logo{display:flex;align-items:center;gap:11px}
+.logo-text{color:#fff;font-weight:800;font-size:18px}
+.logo-sub{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A9BB8}
+.hero{background:linear-gradient(160deg,#060D1F 0%,#1a2f4a 55%,#060D1F 100%);padding:50px 20px 44px;position:relative;overflow:hidden;text-align:center}
+.hero-dots{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,68,68,.07) 1px,transparent 1px);background-size:36px 36px;pointer-events:none}
+.hero-inner{max-width:700px;margin:0 auto;position:relative}
+.live-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.28);border-radius:30px;padding:5px 16px;margin-bottom:22px}
+.pulse{width:7px;height:7px;border-radius:50%;background:#FF4444;display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live-badge span{font-size:11px;font-weight:700;color:#FF8888;letter-spacing:.08em;text-transform:uppercase}
+h1{font-size:46px;font-weight:800;color:#fff;line-height:1.1;margin-bottom:16px;letter-spacing:-.025em}
+h1 span{color:#FF4444}
+.subtitle{color:#8A9BB8;font-size:16px;line-height:1.65;margin-bottom:32px;max-width:480px;margin-left:auto;margin-right:auto}
+.search-wrap{position:relative;max-width:560px;margin:0 auto 22px}
+.search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none}
+#searchInput{width:100%;padding:14px 44px;font-size:15px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.18);border-radius:12px;color:#fff;outline:none}
+#searchInput:focus{border-color:#FF4444}
+#searchInput::placeholder{color:rgba(255,255,255,.4)}
+.clear-btn{position:absolute;right:13px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:rgba(255,255,255,.45);cursor:pointer;font-size:20px;line-height:1;display:none}
+.cat-tabs{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+.cat-btn{border:1.5px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.45);border-radius:10px;padding:9px 20px;cursor:pointer;font-weight:700;font-size:14px;transition:all .15s}
+.cat-btn.active-food{border-color:#FF6B35;background:rgba(255,107,53,.13);color:#fff}
+.cat-btn.active-drug{border-color:#3B82F6;background:rgba(59,130,246,.13);color:#fff}
+.cat-btn.active-device{border-color:#8B5CF6;background:rgba(139,92,246,.13);color:#fff}
+.main{max-width:1100px;margin:0 auto;padding:26px 20px 60px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:#fff;border:1px solid #E8ECF4;border-radius:12px;padding:14px 16px;text-align:center}
+.stat-num{font-size:22px;font-weight:800}
+.stat-label{font-size:10px;color:#8A9BB8;margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.content-grid{display:grid;grid-template-columns:1fr 300px;gap:22px}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.results-count{font-weight:700;color:#0A0F1E;font-size:14px}
+.filter-btns{display:flex;gap:5px}
+.filter-btn{border:1px solid #E8ECF4;background:#fff;color:#8A9BB8;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:11px;font-weight:700;transition:all .15s}
+.filter-btn.active{border-color:#0A0F1E;background:#0A0F1E;color:#fff}
+.recall-card{background:#fff;border:1px solid #E8ECF4;border-radius:14px;padding:16px 18px;cursor:pointer;transition:all .18s;margin-bottom:11px;border-left:3px solid #ccc}
+.recall-card:hover{transform:translateY(-2px)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.card-left{flex:1;min-width:0}
+.card-badges{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.class-badge{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-radius:5px;padding:2px 8px;border:1px solid transparent}
+.cat-tag{font-size:11px;color:#8A9BB8}
+.recall-num{font-size:10px;color:#C5D0E0;font-family:monospace}
+.firm-name{font-weight:700;font-size:15px;color:#0A0F1E;margin-bottom:5px;line-height:1.3}
+.reason{font-size:13px;color:#6B7A99;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.product-box{margin-top:8px;padding:6px 10px;background:#F4F6FA;border-radius:7px;font-size:12px;color:#8A9BB8}
+.card-right{text-align:right;flex-shrink:0}
+.time-badge{font-size:11px;font-weight:600;border-radius:7px;padding:2px 9px;margin-bottom:4px;white-space:nowrap}
+.recall-date{font-size:10px;color:#C5D0E0}
+.resolved{font-size:10px;color:#2CB67D;font-weight:700;margin-top:4px}
+.empty{background:#fff;border:1px solid #E8ECF4;border-radius:14px;padding:48px;text-align:center}
+.empty-icon{font-size:36px;margin-bottom:12px}
+.empty-title{font-weight:700;color:#0A0F1E;margin-bottom:6px;font-size:16px}
+.empty-sub{color:#8A9BB8;font-size:14px}
+.sidebar{display:flex;flex-direction:column;gap:18px}
+.email-widget{background:linear-gradient(145deg,#060D1F,#0D1B35);border-radius:16px;padding:20px;color:#fff}
+.email-header{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.bell-icon{width:34px;height:34px;background:rgba(255,68,68,.15);border:1px solid rgba(255,68,68,.3);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.email-title{font-weight:800;font-size:15px}
+.email-sub{color:#8A9BB8;font-size:11px;margin-top:1px}
+.email-desc{color:#8A9BB8;font-size:12px;line-height:1.6;margin-bottom:14px}
+.pref-label{font-size:10px;font-weight:700;color:#8A9BB8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.pref-btns{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px}
+.pref-btn{border:1px solid rgba(255,255,255,.12);background:transparent;color:rgba(255,255,255,.4);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:600}
+.pref-btn.active{border-color:#FF4444;background:rgba(255,68,68,.15);color:#FF8888}
+.email-input{width:100%;padding:11px 13px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#fff;font-size:13px;margin-bottom:8px;outline:none}
+.email-input:focus{border-color:#FF4444}
+.email-input::placeholder{color:rgba(255,255,255,.3)}
+.submit-btn{width:100%;padding:12px;background:#FF4444;color:#fff;border:none;border-radius:9px;cursor:pointer;font-weight:800;font-size:14px}
+.submit-btn:hover{background:#e03333}
+.no-spam{text-align:center;margin-top:8px;font-size:10px;color:rgba(255,255,255,.2)}
+.severity-card{background:#fff;border:1px solid #E8ECF4;border-radius:16px;padding:20px}
+.severity-title{font-weight:800;font-size:14px;color:#0A0F1E;margin-bottom:14px}
+.severity-row{display:flex;gap:10px;margin-bottom:13px}
+.sev-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.sev-name{font-weight:700;font-size:13px;color:#0A0F1E}
+.sev-desc{font-size:12px;color:#8A9BB8;line-height:1.5;margin-top:1px}
+.tips-card{background:linear-gradient(135deg,#EFF6FF,#E8F0FF);border:1px solid #BFDBFE;border-radius:16px;padding:16px 18px}
+.tips-title{font-weight:800;font-size:13px;color:#1E40AF;margin-bottom:10px}
+.tip-btn{display:inline-block;margin-right:6px;margin-bottom:6px;background:#fff;border:1px solid #BFDBFE;border-radius:20px;padding:3px 12px;cursor:pointer;font-size:12px;color:#3B82F6;font-weight:600}
+footer{background:#060D1F;border-top:1px solid rgba(255,255,255,.06);padding:22px 24px}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.footer-logo{font-weight:800;color:#fff;font-size:16px}
+.footer-note{color:rgba(255,255,255,.25);font-size:12px}
+.modal-overlay{position:fixed;inset:0;background:rgba(6,13,31,.82);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px)}
+.modal{background:#fff;border-radius:20px;width:100%;max-width:660px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.4)}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid #E8ECF4;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.modal-close{border:none;background:#F4F6FA;border-radius:9px;width:34px;height:34px;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;color:#8A9BB8;flex-shrink:0}
+.modal-body{overflow-y:auto;padding:18px 24px 28px}
+.field{border-bottom:1px solid #F4F6FA;padding-bottom:12px;margin-bottom:12px}
+.field-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:#C5D0E0;margin-bottom:4px}
+.field-val{font-size:14px;color:#0A0F1E;line-height:1.65}
+.success-widget{background:linear-gradient(145deg,#060D1F,#0D1B35);border-radius:16px;padding:28px 20px;text-align:center;color:#fff}
+@media(max-width:768px){.content-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}h1{font-size:32px}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <svg width="30" height="30" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="9" fill="#FF4444"/><circle cx="20" cy="22" r="12" stroke="white" stroke-width="1.5" stroke-dasharray="3 3" opacity=".3"/><ellipse cx="20" cy="22" rx="12" ry="5.5" stroke="white" stroke-width="1.8" fill="none"/><circle cx="20" cy="22" r="3.5" fill="white" opacity=".95"/><circle cx="20" cy="22" r="1.8" fill="#FF4444"/><line x1="20" y1="6" x2="20" y2="10" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <div><div class="logo-text">RecallAlert</div><div class="logo-sub">FDA Recall Intelligence</div></div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-dots"></div>
+  <div class="hero-inner">
+    <div class="live-badge"><span class="pulse"></span><span>Live FDA Data · Updated Every 6 Hours</span></div>
+    <h1>The Fastest Way to Find<br><span>FDA Recalls</span></h1>
+    <p class="subtitle">Search 80,000+ food, drug, and device recalls instantly. Plain English. No government maze.</p>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search brand, product, company, or ingredient...">
+      <button class="clear-btn" id="clearBtn" onclick="clearSearch()">×</button>
+    </div>
+    <div class="cat-tabs">
+      <button class="cat-btn active-food" onclick="setCategory('food')">🥫 Food</button>
+      <button class="cat-btn" onclick="setCategory('drug')">💊 Drugs</button>
+      <button class="cat-btn" onclick="setCategory('device')">🩺 Devices</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="stats">
+    <div class="stat-card"><div class="stat-num" style="color:#FF6B35" id="foodCount">5</div><div class="stat-label">Food Recalls</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#3B82F6" id="drugCount">4</div><div class="stat-label">Drug Recalls</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#8B5CF6" id="deviceCount">3</div><div class="stat-label">Device Recalls</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#2CB67D">6hr</div><div class="stat-label">Auto-Synced</div></div>
+  </div>
+  <div class="content-grid">
+    <div>
+      <div class="results-header">
+        <div class="results-count" id="resultsCount">5 recalls</div>
+        <div class="filter-btns">
+          <button class="filter-btn active" onclick="setClass('all')">All Classes</button>
+          <button class="filter-btn" onclick="setClass('Class I')">Class I</button>
+          <button class="filter-btn" onclick="setClass('Class II')">Class II</button>
+          <button class="filter-btn" onclick="setClass('Class III')">Class III</button>
+        </div>
+      </div>
+      <div id="results"></div>
+    </div>
+    <div class="sidebar">
+      <div id="emailWidget">
+        <div class="email-widget">
+          <div class="email-header"><div class="bell-icon">🔔</div><div><div class="email-title">Free Recall Alerts</div><div class="email-sub">14,200+ subscribers</div></div></div>
+          <p class="email-desc">Get notified the moment a recall drops — before it hits the news.</p>
+          <div class="pref-label">Category</div>
+          <div class="pref-btns">
+            <button class="pref-btn active" onclick="setPref(this,'all')">All</button>
+            <button class="pref-btn" onclick="setPref(this,'food')">Food</button>
+            <button class="pref-btn" onclick="setPref(this,'drug')">Drug</button>
+            <button class="pref-btn" onclick="setPref(this,'device')">Device</button>
+          </div>
+          <div class="pref-label">Frequency</div>
+          <div class="pref-btns">
+            <button class="pref-btn" onclick="setFreq(this,'instant')">Instant</button>
+            <button class="pref-btn active" onclick="setFreq(this,'daily')">Daily</button>
+            <button class="pref-btn" onclick="setFreq(this,'weekly')">Weekly</button>
+          </div>
+          <input type="email" class="email-input" id="emailInput" placeholder="your@email.com">
+          <button class="submit-btn" onclick="submitEmail()">Get Free Alerts →</button>
+          <div class="no-spam">No spam. Unsubscribe anytime.</div>
+        </div>
+      </div>
+      <div class="severity-card">
+        <div class="severity-title">Severity Classes</div>
+        <div class="severity-row"><div class="sev-dot" style="background:#FF4444"></div><div><div class="sev-name">Class I <span style="color:#CC0000">— High Risk</span></div><div class="sev-desc">Most serious — risk of death or injury.</div></div></div>
+        <div class="severity-row"><div class="sev-dot" style="background:#F97316"></div><div><div class="sev-name">Class II <span style="color:#C2410C">— Moderate</span></div><div class="sev-desc">Temporary or moderate health risk.</div></div></div>
+        <div class="severity-row"><div class="sev-dot" style="background:#3B82F6"></div><div><div class="sev-name">Class III <span style="color:#1D4ED8">— Low Risk</span></div><div class="sev-desc">Low risk, violates FDA regulations.</div></div></div>
+      </div>
+      <div class="tips-card">
+        <div class="tips-title">💡 Try These Searches</div>
+        <button class="tip-btn" onclick="quickSearch('peanut','food')">peanut</button>
+        <button class="tip-btn" onclick="quickSearch('listeria','food')">listeria</button>
+        <button class="tip-btn" onclick="quickSearch('Tylenol','drug')">Tylenol</button>
+        <button class="tip-btn" onclick="quickSearch('pacemaker','device')">pacemaker</button>
+        <button class="tip-btn" onclick="quickSearch('yogurt','food')">yogurt</button>
+        <button class="tip-btn" onclick="quickSearch('sodium','drug')">sodium</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer><div class="footer-inner"><span class="footer-logo">RecallAlert</span><span class="footer-note">Data from openFDA.gov · Not affiliated with FDA · Informational use only</span></div></footer>
+
+<div class="modal-overlay" id="modal" style="display:none" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div id="modalHeader"></div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const RECALLS = [
+  {id:1,num:"F-2025-0042",firm:"Sunshine Foods Co.",cls:"Class I",cat:"food",reason:"Undeclared peanut allergen not listed on label. Consumers with peanut allergies at risk of serious allergic reaction including anaphylaxis.",product:"Sunshine Granola Bars, Chocolate Chip, 12oz box.",lot:"Best By 01/2026-06/2026, Lots SFC-2024-A through F",dist:"Nationwide via Walmart, Target, Kroger and online.",qty:"45,000 units",status:"Ongoing",city:"Chicago",state:"IL",date:"20250112",end:null},
+  {id:2,num:"F-2025-0041",firm:"Valley Fresh Produce",cls:"Class I",cat:"food",reason:"Potential Listeria monocytogenes contamination. Serious illness risk for pregnant women and elderly.",product:"Ready-to-eat Romaine Salad Mix, 10oz bags.",lot:"Use-by Jan 8-22 2025. Plant: VFP-CA",dist:"California, Oregon, Washington, Nevada, Arizona.",qty:"128,000 units",status:"Ongoing",city:"Fresno",state:"CA",date:"20250108",end:null},
+  {id:3,num:"F-2025-0039",firm:"Great Lakes Dairy Inc.",cls:"Class II",cat:"food",reason:"Products may contain small pieces of blue plastic packaging material from production line.",product:"Great Lakes Whole Milk Yogurt, 32oz containers.",lot:"Lots GL-24-289 through GL-24-301.",dist:"Michigan, Ohio, Indiana, Illinois, Wisconsin.",qty:"23,500 units",status:"Terminated",city:"Detroit",state:"MI",date:"20241228",end:"20250115"},
+  {id:4,num:"F-2025-0038",firm:"Rio Grande Salsa Co.",cls:"Class I",cat:"food",reason:"Undeclared sulfites exceeding safe limits. May cause difficulty breathing or anaphylaxis.",product:"Rio Grande Roasted Tomato Salsa, Medium Heat, 16oz jars.",lot:"Lots RGS-2024-44 through RGS-2024-48.",dist:"Texas, New Mexico, Arizona, Colorado. Amazon.",qty:"67,200 jars",status:"Ongoing",city:"San Antonio",state:"TX",date:"20250105",end:null},
+  {id:5,num:"F-2025-0035",firm:"Pacific Seafood Group",cls:"Class I",cat:"food",reason:"Elevated histamine levels. Can cause scombroid food poisoning — rash, headache, vomiting.",product:"Wild-caught Yellowfin Tuna Steaks, frozen, 1lb packs.",lot:"Lots PSG-4451 through PSG-4460.",dist:"Nationwide — Whole Foods, Sprouts, fish markets.",qty:"12,800 units",status:"Ongoing",city:"Portland",state:"OR",date:"20250103",end:null},
+  {id:6,num:"D-2025-0021",firm:"MediPharm Solutions",cls:"Class I",cat:"drug",reason:"Tablets contain 40% more active ingredient than labeled. Overdose risk with cardiovascular complications.",product:"Metoprolol Succinate ER Tablets 50mg, 90-count bottles.",lot:"Lots MP2024-001 through MP2024-015. Exp 08/2026.",dist:"CVS, Walgreens, Rite Aid nationwide.",qty:"1,200,000 tablets",status:"Ongoing",city:"Princeton",state:"NJ",date:"20250110",end:null},
+  {id:7,num:"D-2025-0019",firm:"GeneriCo Pharma",cls:"Class II",cat:"drug",reason:"Failed dissolution testing — tablets may not dissolve properly, reducing effectiveness.",product:"Atorvastatin Calcium Tablets 20mg and 40mg.",lot:"Lots GCP-2024-88 through GCP-2024-95.",dist:"Pharmacies in all 50 states.",qty:"4,500,000 tablets",status:"Ongoing",city:"Parsippany",state:"NJ",date:"20250108",end:null},
+  {id:8,num:"D-2025-0017",firm:"Apex Laboratories",cls:"Class I",cat:"drug",reason:"Microbial contamination in injectable product. May cause serious life-threatening infection.",product:"Sodium Chloride Injection 0.9%, 1000mL IV bags.",lot:"Lots APX-IV-2024-330 through APX-IV-2024-345.",dist:"Hospitals in 38 states.",qty:"85,000 units",status:"Ongoing",city:"Baltimore",state:"MD",date:"20250104",end:null},
+  {id:9,num:"D-2025-0014",firm:"Tylenol Consumer Healthcare",cls:"Class III",cat:"drug",reason:"Spanish language insert has incorrect dosing instructions. English label is correct. No adverse events.",product:"Tylenol Regular Strength 325mg, 100-count bilingual.",lot:"Lot TCH-2024-US-441.",dist:"Florida, Texas, California, New York retailers.",qty:"320,000 bottles",status:"Terminated",city:"Fort Washington",state:"PA",date:"20241220",end:"20250108"},
+  {id:10,num:"DV-2025-0031",firm:"CardioTech Medical Devices",cls:"Class I",cat:"device",reason:"Software error may cause pacemaker to deliver incorrect pacing pulses. Risk of serious injury or death.",product:"Model CT-7000 Implantable Cardiac Pacemaker, Jan-Oct 2024.",lot:"Serial CT7-240001 through CT7-248750.",dist:"Cardiac centers and hospitals in all 50 states.",qty:"8,750 devices",status:"Ongoing",city:"Minneapolis",state:"MN",date:"20250111",end:null},
+  {id:11,num:"DV-2025-0028",firm:"SurgiPro Instruments",cls:"Class II",cat:"device",reason:"Sterilization packaging may have been compromised, potentially contaminating surgical instruments.",product:"SurgiPro Laparoscopic Instrument Set, 5-piece stainless steel.",lot:"Lots SP-2024-L-180 through SP-2024-L-210.",dist:"Surgical centers in 22 states.",qty:"14,200 sets",status:"Ongoing",city:"Boston",state:"MA",date:"20250106",end:null},
+  {id:12,num:"DV-2025-0025",firm:"GlucoSense Diagnostics",cls:"Class II",cat:"device",reason:"Blood glucose readings may be inaccurate by 20% in cold temperatures, risking improper insulin dosing.",product:"GlucoSense Platinum Blood Glucose Monitor GS-3000.",lot:"Serial GS30-2024-00001 through GS30-2024-35000.",dist:"Nationwide pharmacy chains.",qty:"35,000 monitors",status:"Ongoing",city:"San Diego",state:"CA",date:"20250102",end:null},
+];
+
+const CM = {
+  "Class I":   {badge:"#FF4444",bg:"#FFF0F0",txt:"#CC0000",label:"High Risk"},
+  "Class II":  {badge:"#F97316",bg:"#FFF7ED",txt:"#C2410C",label:"Moderate"},
+  "Class III": {badge:"#3B82F6",bg:"#EFF6FF",txt:"#1D4ED8",label:"Low Risk"},
+};
+const CATS = {food:{icon:"🥫",label:"Food"},drug:{icon:"💊",label:"Drugs"},device:{icon:"🩺",label:"Devices"}};
+
+let currentCat = "food", currentCls = "all", currentQ = "";
+
+function fmt(s){if(!s)return"—";try{return new Date(`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}catch{return s}}
+function ago(s){if(!s)return"";try{const d=Math.floor((Date.now()-new Date(`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`).getTime())/86400000);return d<1?"Today":d===1?"Yesterday":d<30?`${d}d ago`:d<365?`${Math.floor(d/30)}mo ago`:`${Math.floor(d/365)}y ago`}catch{return""}}
+
+function setCategory(cat) {
+  currentCat = cat; currentCls = "all"; currentQ = "";
+  document.getElementById("searchInput").value = "";
+  document.getElementById("clearBtn").style.display = "none";
+  document.querySelectorAll(".cat-btn").forEach(b => b.className = "cat-btn");
+  event.target.className = `cat-btn active-${cat}`;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".filter-btn")[0].classList.add("active");
+  render();
+}
+
+function setClass(cls) {
+  currentCls = cls;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  event.target.classList.add("active");
+  render();
+}
+
+function clearSearch() {
+  currentQ = ""; document.getElementById("searchInput").value = "";
+  document.getElementById("clearBtn").style.display = "none"; render();
+}
+
+function quickSearch(q, cat) {
+  currentQ = q; currentCat = cat;
+  document.getElementById("searchInput").value = q;
+  document.getElementById("clearBtn").style.display = "block";
+  document.querySelectorAll(".cat-btn").forEach(b => b.className = "cat-btn");
+  document.querySelectorAll(".cat-btn").forEach(b => { if(b.textContent.toLowerCase().includes(cat)) b.className = `cat-btn active-${cat}`; });
+  render();
+}
+
+function setPref(btn, val) { document.querySelectorAll(".pref-btns .pref-btn").forEach(b=>{if(b.parentElement===btn.parentElement)b.classList.remove("active")}); btn.classList.add("active"); }
+function setFreq(btn, val) { document.querySelectorAll(".pref-btns")[1].querySelectorAll(".pref-btn").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); }
+
+function submitEmail() {
+  const email = document.getElementById("emailInput").value;
+  if (!email.includes("@")) { document.getElementById("emailInput").style.borderColor="#FF4444"; return; }
+  document.getElementById("emailWidget").innerHTML = `<div class="success-widget"><div style="font-size:38px;margin-bottom:10px">✅</div><div style="font-weight:800;font-size:18px;margin-bottom:6px">You're subscribed!</div><div style="color:#8A9BB8;font-size:13px;line-height:1.6">FDA recall alerts coming to your inbox. No spam, ever.</div></div>`;
+}
+
+function openModal(id) {
+  const r = RECALLS.find(x => x.id === id);
+  const m = CM[r.cls] || {badge:"#999",bg:"#f5f5f5",txt:"#666",label:"Unknown"};
+  const c = CATS[r.cat];
+  document.getElementById("modalHeader").innerHTML = `
+    <div style="display:flex;gap:7px;margin-bottom:9px;flex-wrap:wrap">
+      <span style="font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.08em;background:${m.bg};color:${m.txt};border:1px solid ${m.badge}44;border-radius:6px;padding:3px 11px">${r.cls} — ${m.label}</span>
+      <span style="font-size:12px;color:#8A9BB8">${c.icon} ${c.label}</span>
+    </div>
+    <div style="font-weight:800;font-size:20px;color:#0A0F1E;line-height:1.3">${r.firm}</div>`;
+  const fields = [["Recalling Firm",r.firm],["Classification",`${r.cls} — ${m.label}`],["Status",r.status],["Product",r.product],["Reason for Recall",r.reason],["Lot / Code Info",r.lot],["Quantity",r.qty],["Distribution",r.dist],["Location",[r.city,r.state].filter(Boolean).join(", ")],["Recall Initiated",fmt(r.date)],["Termination",r.end?fmt(r.end):"🔴 Still Active"],["Recall Number",r.num]];
+  document.getElementById("modalBody").innerHTML = fields.filter(([,v])=>v).map(([l,v])=>`<div class="field"><div class="field-label">${l}</div><div class="field-val">${v}</div></div>`).join("");
+  document.getElementById("modal").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeModal() { document.getElementById("modal").style.display = "none"; document.body.style.overflow = ""; }
+document.addEventListener("keydown", e => { if(e.key==="Escape") closeModal(); });
+
+function render() {
+  const q = currentQ.toLowerCase();
+  const filtered = RECALLS.filter(r => {
+    if (r.cat !== currentCat) return false;
+    if (currentCls !== "all" && r.cls !== currentCls) return false;
+    if (q) return r.firm.toLowerCase().includes(q) || r.reason.toLowerCase().includes(q) || r.product.toLowerCase().includes(q) || r.num.toLowerCase().includes(q);
+    return true;
+  });
+  document.getElementById("resultsCount").innerHTML = `${filtered.length} recall${filtered.length!==1?"s":""}${currentQ?` matching "<span style="color:#8A9BB8;font-weight:400">${currentQ}</span>"`:""}`;
+  if (!filtered.length) {
+    document.getElementById("results").innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">No recalls found</div><div class="empty-sub">Try searching peanut, listeria, Tylenol, or pacemaker</div></div>`;
+    return;
+  }
+  document.getElementById("results").innerHTML = filtered.map(r => {
+    const m = CM[r.cls] || {badge:"#ccc",bg:"#f5f5f5",txt:"#666",label:"Unknown"};
+    const c = CATS[r.cat];
+    return `<div class="recall-card" style="border-left-color:${m.badge}" onclick="openModal(${r.id})" onmouseenter="this.style.boxShadow='0 6px 22px ${m.badge}22'" onmouseleave="this.style.boxShadow='none'">
+      <div class="card-top">
+        <div class="card-left">
+          <div class="card-badges">
+            <span class="class-badge" style="background:${m.bg};color:${m.txt};border-color:${m.badge}33">${r.cls} · ${m.label}</span>
+            <span class="cat-tag">${c.icon} ${c.label}</span>
+            <span class="recall-num">${r.num}</span>
+          </div>
+          <div class="firm-name">${r.firm}</div>
+          <div class="reason">${r.reason}</div>
+          <div class="product-box"><strong style="color:#6B7A99">Product: </strong>${r.product.slice(0,100)}${r.product.length>100?"...":""}</div>
+        </div>
+        <div class="card-right">
+          <div class="time-badge" style="color:${m.txt};background:${m.bg}">${ago(r.date)}</div>
+          <div class="recall-date">${fmt(r.date)}</div>
+          ${r.status==="Terminated"?'<div class="resolved">✓ Resolved</div>':""}
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+document.getElementById("searchInput").addEventListener("input", function() {
+  currentQ = this.value;
+  document.getElementById("clearBtn").style.display = this.value ? "block" : "none";
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
